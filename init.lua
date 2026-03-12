@@ -91,7 +91,7 @@ vim.g.mapleader = ' '
 vim.g.maplocalleader = ' '
 
 -- Set to true if you have a Nerd Font installed and selected in the terminal
-vim.g.have_nerd_font = false
+vim.g.have_nerd_font = true
 
 -- [[ Setting options ]]
 -- See `:help vim.o`
@@ -102,7 +102,7 @@ vim.g.have_nerd_font = false
 vim.o.number = true
 -- You can also add relative line numbers, to help with jumping.
 --  Experiment for yourself to see if you like it!
--- vim.o.relativenumber = true
+vim.o.relativenumber = true
 
 -- Enable mouse mode, can be useful for resizing splits for example!
 vim.o.mouse = 'a'
@@ -148,7 +148,11 @@ vim.o.splitbelow = true
 --   See `:help lua-options`
 --   and `:help lua-guide-options`
 vim.o.list = true
-vim.opt.listchars = { tab = '» ', trail = '·', nbsp = '␣' }
+vim.opt.listchars = {
+  tab = '» ', -- sets the character to display for tabs as a right arrow (») followed by a space
+  trail = '·', -- sets the character to display for trailing spaces as a middle dot (·)
+  nbsp = '␣', -- sets the character to display for non-breaking spaces as a middle dot (␣)
+}
 
 -- Preview substitutions live, as you type!
 vim.o.inccommand = 'split'
@@ -163,6 +167,12 @@ vim.o.scrolloff = 10
 -- instead raise a dialog asking if you wish to save the current file(s)
 -- See `:help 'confirm'`
 vim.o.confirm = true
+
+-- Set tabs to 4 spaces
+vim.o.tabstop = 4 -- sets the number of spaces for tabs
+vim.o.softtabstop = 4 -- sets the number of spaces for <Tab> and <BS> in insert mode
+vim.o.shiftwidth = 4 -- sets the number of spaces for auto-indentation
+vim.o.expandtab = true -- ensures that when you press <Tab>, it inserts spaces
 
 -- [[ Basic Keymaps ]]
 --  See `:help vim.keymap.set()`
@@ -287,6 +297,86 @@ require('lazy').setup({
         changedelete = { text = '~' }, ---@diagnostic disable-line: missing-fields
       },
     },
+  },
+  -- Copilot Configuration
+  {
+    'zbirenbaum/copilot.lua',
+    cmd = 'Copilot',
+    build = ':Copilot auth',
+    event = 'BufReadPost',
+    config = function() require('copilot').setup {} end,
+    dependencies = {
+      'copilotlsp-nvim/copilot-lsp',
+    },
+    opts = {
+      suggestion = {
+        enabled = false,
+        auto_trigger = true,
+        hide_during_completion = vim.g.ai_cmp,
+        keymap = {
+          accept = false, -- handled by nvim-cmp / blink.cmp
+          next = '<M-]>',
+          prev = '<M-[>',
+        },
+      },
+      panel = { enabled = false },
+      filetypes = {
+        markdown = true,
+        help = true,
+      },
+      auth_provider_url = nil, -- URL to authentication provider, if not "https://github.com/"
+    },
+  },
+  {
+    'nvim-lualine/lualine.nvim',
+    dependencies = { 'nvim-tree/nvim-web-devicons' },
+    event = 'VeryLazy',
+    opts = {
+      options = {
+        icons_enabled = true,
+        theme = 'dracula',
+        component_separators = { left = '', right = '' },
+        section_separators = { left = '', right = '' },
+        disabled_filetypes = {},
+        always_divide_middle = true,
+      },
+      sections = {
+        lualine_x = {
+          {
+            'copilot',
+            -- Default values
+            symbols = {
+              status = {
+                icons = {
+                  enabled = ' ',
+                  sleep = ' ', -- auto-trigger disabled
+                  disabled = ' ',
+                  warning = ' ',
+                  unknown = ' ',
+                },
+                hl = {
+                  enabled = '#F527DD',
+                  sleep = '#50FA7B',
+                  disabled = '#6272A4',
+                  warning = '#FFB86C',
+                  unknown = '#FF5555',
+                },
+              },
+              spinners = 'dots', -- has some premade spinners
+              spinner_color = '#6272A4',
+            },
+            show_colors = true,
+            show_loading = true,
+          },
+          'encoding',
+          'fileformat',
+          'filetype',
+        },
+      },
+    },
+  },
+  {
+    'AndreM222/copilot-lualine',
   },
 
   -- NOTE: Plugins can also be configured to run Lua code when they are loaded.
@@ -600,9 +690,23 @@ require('lazy').setup({
       --  See `:help lsp-config` for information about keys and how to configure
       ---@type table<string, vim.lsp.Config>
       local servers = {
-        -- clangd = {},
+        clangd = {},
+        pyright = {},
+        terraformls = {},
+        yamlls = {},
+        ts_ls = {
+          on_attach = function(client, bufnr)
+            if client.config.root_dir == nil then client.stop(client, true) end
+          end,
+          settings = {
+            js = {
+              implicitProjectConfig = {
+                checkJs = true,
+              },
+            },
+          },
+        },
         -- gopls = {},
-        -- pyright = {},
         -- rust_analyzer = {},
         --
         -- Some languages (like typescript) have entire language plugins that can be useful:
@@ -710,6 +814,7 @@ require('lazy').setup({
     event = 'VimEnter',
     version = '1.*',
     dependencies = {
+      'fang2hou/blink-copilot',
       -- Snippet Engine
       {
         'L3MON4D3/LuaSnip',
@@ -779,7 +884,15 @@ require('lazy').setup({
       },
 
       sources = {
-        default = { 'lsp', 'path', 'snippets' },
+        default = { 'lsp', 'path', 'snippets', 'copilot' },
+        providers = {
+          copilot = {
+            name = 'copilot',
+            module = 'blink-copilot',
+            score_offset = 100,
+            async = true,
+          },
+        },
       },
 
       snippets = { preset = 'luasnip' },
@@ -808,6 +921,7 @@ require('lazy').setup({
     config = function()
       ---@diagnostic disable-next-line: missing-fields
       require('tokyonight').setup {
+        transparent = true,
         styles = {
           comments = { italic = false }, -- Disable italics in comments
         },
@@ -920,7 +1034,7 @@ require('lazy').setup({
   --    This is the easiest way to modularize your config.
   --
   --  Uncomment the following line and add your plugins to `lua/custom/plugins/*.lua` to get going.
-  -- { import = 'custom.plugins' },
+  { import = 'custom.plugins' },
   --
   -- For additional information with loading, sourcing and examples see `:help lazy.nvim-🔌-plugin-spec`
   -- Or use telescope!
