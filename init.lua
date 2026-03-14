@@ -298,6 +298,12 @@ require('lazy').setup({
       },
     },
   },
+  -- Personal Plugins
+  {
+    'pmizio/typescript-tools.nvim',
+    dependencies = { 'nvim-lua/plenary.nvim', 'neovim/nvim-lspconfig' },
+    opts = {},
+  },
   -- Copilot Configuration
   {
     'zbirenbaum/copilot.lua',
@@ -694,18 +700,6 @@ require('lazy').setup({
         pyright = {},
         terraformls = {},
         yamlls = {},
-        ts_ls = {
-          on_attach = function(client, bufnr)
-            if client.config.root_dir == nil then client.stop(client, true) end
-          end,
-          settings = {
-            js = {
-              implicitProjectConfig = {
-                checkJs = true,
-              },
-            },
-          },
-        },
         -- gopls = {},
         -- rust_analyzer = {},
         --
