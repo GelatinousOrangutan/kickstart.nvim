@@ -613,6 +613,7 @@ require('lazy').setup({
         pyright = {},
         terraformls = {},
         yamlls = {},
+        copilot = {},
         -- gopls = {},
         -- rust_analyzer = {},
         --
@@ -721,7 +722,6 @@ require('lazy').setup({
     event = 'VimEnter',
     version = '1.*',
     dependencies = {
-      'fang2hou/blink-copilot',
       -- Snippet Engine
       {
         'L3MON4D3/LuaSnip',
@@ -791,15 +791,7 @@ require('lazy').setup({
       },
 
       sources = {
-        default = { 'lsp', 'path', 'snippets', 'copilot' },
-        providers = {
-          copilot = {
-            name = 'copilot',
-            module = 'blink-copilot',
-            score_offset = 100,
-            async = true,
-          },
-        },
+        default = { 'lsp', 'path', 'snippets' },
       },
 
       snippets = { preset = 'luasnip' },
@@ -895,7 +887,25 @@ require('lazy').setup({
     branch = 'main',
     -- [[ Configure Treesitter ]] See `:help nvim-treesitter-intro`
     config = function()
-      local parsers = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc' }
+      local parsers = {
+        'bash',
+        'c',
+        'diff',
+        'html',
+        'lua',
+        'luadoc',
+        'markdown',
+        'markdown_inline',
+        'query',
+        'vim',
+        'vimdoc',
+        'python',
+        'javascript',
+        'yaml',
+        'groovy',
+        'java',
+        'terraform',
+      }
       require('nvim-treesitter').install(parsers)
       vim.api.nvim_create_autocmd('FileType', {
         callback = function(args)
